@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-assume-role-policy-document
+  namespace: aws-assume-role
+data:
+  assumeRolePolicyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Principal": {
+            "AWS": "arn:aws:iam::{{ .Values.accountId }}:role/aws-assume-role-role"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    }

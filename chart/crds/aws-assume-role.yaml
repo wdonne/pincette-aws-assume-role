@@ -1,0 +1,41 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: awsassumeroles.pincette.net
+spec:
+  group: pincette.net
+  names:
+    kind: AWSAssumeRole
+    plural: awsassumeroles
+    singular: awsassumerole
+  scope: Namespaced
+  versions:
+    - name: v1
+      schema:
+        openAPIV3Schema:
+          properties:
+            spec:
+              properties:
+                durationSeconds:
+                  type: integer
+                roleName:
+                  type: string
+                secretName:
+                  type: string
+                secretType:
+                  enum:
+                    - File
+                    - Map
+                  type: string
+              required:
+                - roleName
+                - secretName
+                - secretType
+              type: object
+            status:
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: { }

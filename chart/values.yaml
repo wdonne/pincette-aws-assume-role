@@ -1,0 +1,21 @@
+# The AWS account ID.
+accountId: ""
+
+# The node selector for the controller pod.
+nodeSelector: {}
+
+# The EKS OIDC provider ID. You can get it with the following command:
+# > aws eks describe-cluster --name my-cluster --query "cluster.identity.oidc.issuer" --output text
+oidcProviderId: ""
+
+# The AWS region.
+region: ""
+
+# The resources for the controller pod.
+resources: {}
+
+# The list of IAM roles that the controller is allowed to assume. You can use wildcards.
+rolesToAssume: []
+
+# The security context for the controller pod.
+securityContext: {}

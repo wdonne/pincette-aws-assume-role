@@ -1,0 +1,14 @@
+apiVersion: services.k8s.aws/v1alpha1
+kind: AdoptedResource
+metadata:
+  name: adopt-aws-assume-role-policy
+  namespace: aws-assume-role
+spec:
+  aws:
+    arn: arn:aws:iam::{{ .Values.accountId }}:policy/aws-assume-role-policy
+  kubernetes:
+    group: iam.services.k8s.aws
+    kind: Policy
+    metadata:
+      name: aws-assume-role-policy
+      namespace: aws-assume-role

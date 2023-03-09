@@ -1,0 +1,17 @@
+apiVersion: v2
+appVersion: "1.0"
+description: The AWS Assume Role Kubernetes operator
+home: https://github.com/wdonne/pincette-aws-assume-role
+keywords:
+  - aws
+  - role
+  - iam
+  - assume
+maintainers:
+  - name: Werner Donné
+    email: werner.donne@pincette.net
+    url: https://github.com/wdonne
+name: aws-assume-role
+sources:
+  - https://github.com/wdonne/pincette-aws-assume-role
+version: 1.0.0

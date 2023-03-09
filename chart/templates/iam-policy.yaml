@@ -1,0 +1,20 @@
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: aws-assume-role-policy
+  namespace: aws-assume-role
+spec:
+  name: aws-assume-role-policy
+  description: Allow the AWSAssumeRole service to access AWS IAM
+  policyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Action": "sts:AssumeRole",
+          "Resource": {{ .Values.rolesToAssume }}
+        }
+      ]
+    }

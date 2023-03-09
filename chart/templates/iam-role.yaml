@@ -1,0 +1,32 @@
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: aws-assume-role-role
+  namespace: aws-assume-role
+spec:
+  name: aws-assume-role-role
+  description: The role for the AWSAssumeRole service
+  policyRefs:
+    - from:
+        name: aws-assume-role-policy
+  assumeRolePolicyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Principal": {
+            "Federated":
+              "arn:aws:iam::{{ .Values.accountId }}:oidc-provider/oidc.eks.{{ .Values.region }}.amazonaws.com/id/{{ .Values.oidcProviderId }}"
+          },
+          "Action": "sts:AssumeRoleWithWebIdentity",
+          "Condition": {
+            "StringEquals": {
+              "oidc.eks.{{ .Values.region }}.amazonaws.com/id/{{ .Values.oidcProviderId }}:sub":
+                "system:serviceaccount:aws-assume-role:aws-assume-role-controller"
+            }
+          }
+        }
+      ]
+    }

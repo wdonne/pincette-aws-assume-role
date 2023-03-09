@@ -1,0 +1,39 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aws-assume-role-controller
+  labels:
+    app.kubernetes.io/component: aws-assume-role-controller
+    app.kubernetes.io/name: aws-assume-role-controller
+rules:
+  - apiGroups:
+      - pincette.net
+    resources:
+      - awsassumeroles
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - pincette.net
+    resources:
+      - awsassumeroles/status
+    verbs:
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch

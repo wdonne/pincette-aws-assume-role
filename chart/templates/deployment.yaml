@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-assume-role-controller
+  namespace: aws-assume-role
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      apps.kubernetes.io/name: aws-assume-role-controller
+  template:
+    metadata:
+      labels:
+        apps.kubernetes.io/name: aws-assume-role-controller
+    spec:
+      containers:
+        - name: aws-assume-role-controller
+          image: wdonne/pincette-aws-assume-role:{{ .Chart.AppVersion }}
+          resources:
+            {{ toYaml .Values.resources }}
+          env:
+            - name: AWS_ACCOUNT_ID
+              value: {{ .Values.accountId | quote }}
+      nodeSelector:
+        {{ toYaml .Values.nodeSelector }}
+      securityContext:
+        {{ toYaml .Values.securityContext }}
+      serviceAccountName: aws-assume-role-controller
