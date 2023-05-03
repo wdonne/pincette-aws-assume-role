@@ -14,7 +14,7 @@ spec:
           "Sid": "",
           "Effect": "Allow",
           "Action": "sts:AssumeRole",
-          "Resource": {{ .Values.rolesToAssume }}
+          "Resource": [{{- range $i, $value := .Values.rolesToAssume }} {{ if ne $i 0 }},{{ end }} {{ $value | quote }} {{- end }}]
         }
       ]
     }

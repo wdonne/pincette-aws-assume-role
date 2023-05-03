@@ -108,16 +108,16 @@ metadata:
   name: mypod
 spec:
   containers:
-  - name: mypod
-    image: myimage
-    volumeMounts:
-    - name: aws
-      mountPath: "$HOME/.aws"
-      readOnly: true
+    - name: mypod
+      image: myimage
+      volumeMounts:
+        - name: aws
+          mountPath: "$HOME/.aws"
+          readOnly: true
   volumes:
-  - name: aws
-    secret:
-      secretName: mysecret
+    - name: aws
+      secret:
+        secretName: assume-my-secrets-manager-role
 ```
 
 Assuming the presence of the AWS IAM Controller, install the operator as follows:

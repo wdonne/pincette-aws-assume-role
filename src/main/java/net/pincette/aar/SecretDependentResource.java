@@ -22,10 +22,10 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 @KubernetesDependent(labelSelector = SecretDependentResource.SELECTOR)
 public class SecretDependentResource
     extends CRUDKubernetesDependentResource<Secret, AWSAssumeRole> {
+  private static final String ACCOUNT_ID = getenv("AWS_ACCOUNT_ID");
   private static final Logger LOGGER = getLogger("net.pincette.aar");
   public static final String SELECTOR = "aws-assume-role";
 
-  private static final String accountId = getenv("AWS_ACCOUNT_ID");
 
   @SuppressWarnings({"java:S6241", "java:S6242"}) // Provided by the environment.
   private final StsClient stsClient = builder().build();
@@ -48,7 +48,7 @@ public class SecretDependentResource
   }
 
   private static String roleArn(final String role) {
-    return "arn:aws:iam::" + accountId + ":role/" + role;
+    return "arn:aws:iam::" + ACCOUNT_ID + ":role/" + role;
   }
 
   private Map<String, String> credentials(final AWSAssumeRole primary) {
