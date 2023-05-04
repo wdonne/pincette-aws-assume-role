@@ -99,7 +99,7 @@ data:
     aws_session_token=XXXXXXXXXX    
 ```
 
-You can mount this in a pod as a volume at `~/.aws`. The pod will see it as the file `~/.aws/credentials`. This is an example:
+Set the environment variable `AWS_SHARED_CREDENTIALS_FILE` to `/.aws/credentials`. You can then mount this in a pod as a volume at `/.aws`. The pod will see it as the file `/.aws/credentials`. This is an example:
 
 ```yaml
 apiVersion: v1
@@ -110,9 +110,12 @@ spec:
   containers:
     - name: mypod
       image: myimage
+      env:
+        - name: AWS_SHARED_CREDENTIALS_FILE
+          value: "/.aws/credentials"        
       volumeMounts:
         - name: aws
-          mountPath: "~/.aws"
+          mountPath: "/.aws"
           readOnly: true
   volumes:
     - name: aws
