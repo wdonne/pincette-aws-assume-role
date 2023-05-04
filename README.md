@@ -99,7 +99,7 @@ data:
     aws_session_token=XXXXXXXXXX    
 ```
 
-You can mount this in a pod as a volume at `$HOME/.aws`. The pod will see it as the file `$HOME/.aws/credentials`. This is an example:
+You can mount this in a pod as a volume at `~/.aws`. The pod will see it as the file `~/.aws/credentials`. This is an example:
 
 ```yaml
 apiVersion: v1
@@ -112,7 +112,7 @@ spec:
       image: myimage
       volumeMounts:
         - name: aws
-          mountPath: "$HOME/.aws"
+          mountPath: "~/.aws"
           readOnly: true
   volumes:
     - name: aws
