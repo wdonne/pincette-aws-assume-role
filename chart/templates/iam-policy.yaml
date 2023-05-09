@@ -5,7 +5,7 @@ metadata:
   namespace: aws-assume-role
 spec:
   name: aws-assume-role-policy
-  description: Allow the AWSAssumeRole service to access AWS IAM
+  description: Allow the AWSAssumeRole service to access AWS STS
   policyDocument: |
     {
       "Version": "2012-10-17",

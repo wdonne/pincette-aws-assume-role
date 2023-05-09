@@ -2,7 +2,7 @@ package net.pincette.aar;
 
 import static java.lang.System.getenv;
 import static java.util.UUID.randomUUID;
-import static java.util.logging.Logger.getLogger;
+import static net.pincette.aar.AWSAssumeRoleReconciler.LOGGER;
 import static net.pincette.util.Collections.map;
 import static net.pincette.util.Pair.pair;
 import static software.amazon.awssdk.services.sts.StsClient.builder;
@@ -14,7 +14,6 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import java.util.Map;
-import java.util.logging.Logger;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 import software.amazon.awssdk.services.sts.model.Credentials;
@@ -23,9 +22,7 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 public class SecretDependentResource
     extends CRUDKubernetesDependentResource<Secret, AWSAssumeRole> {
   private static final String ACCOUNT_ID = getenv("AWS_ACCOUNT_ID");
-  private static final Logger LOGGER = getLogger("net.pincette.aar");
   public static final String SELECTOR = "aws-assume-role";
-
 
   @SuppressWarnings({"java:S6241", "java:S6242"}) // Provided by the environment.
   private final StsClient stsClient = builder().build();

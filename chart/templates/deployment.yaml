@@ -16,6 +16,7 @@ spec:
       containers:
         - name: aws-assume-role-controller
           image: "wdonne/pincette-aws-assume-role:{{ .Chart.AppVersion }}"
+          imagePullPolicy: Always
           resources:
             {{ toYaml .Values.resources }}
           env:
