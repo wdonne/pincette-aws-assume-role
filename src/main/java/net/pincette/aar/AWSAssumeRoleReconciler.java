@@ -1,13 +1,14 @@
 package net.pincette.aar;
 
 import static io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer.generateNameFor;
-import static io.javaoperatorsdk.operator.api.reconciler.UpdateControl.noUpdate;
+import static io.javaoperatorsdk.operator.api.reconciler.UpdateControl.patchStatus;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Logger.getLogger;
 import static net.pincette.aar.SecretDependentResource.SELECTOR;
+import static net.pincette.aar.Util.name;
 import static net.pincette.util.Collections.map;
 import static net.pincette.util.Pair.pair;
 import static net.pincette.util.Util.tryToDo;
@@ -62,14 +63,17 @@ public class AWSAssumeRoleReconciler
       final AWSAssumeRole awsAssumeRole, final Context<AWSAssumeRole> context) {
     tryToDo(
         () -> {
+          LOGGER.info(() -> "Reconciling " + name(awsAssumeRole.getMetadata()));
           secretDR.reconcile(awsAssumeRole, context);
           renew(awsAssumeRole);
+          awsAssumeRole.setStatus(new AWSAssumeRoleStatus());
         },
         e -> {
           LOGGER.log(SEVERE, e, e::getMessage);
           timerEventSource.scheduleOnce(awsAssumeRole, 5000);
+          awsAssumeRole.setStatus(new AWSAssumeRoleStatus(e.getMessage()));
         });
 
-    return noUpdate();
+    return patchStatus(awsAssumeRole);
   }
 }

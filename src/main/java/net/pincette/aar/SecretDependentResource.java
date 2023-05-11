@@ -3,11 +3,11 @@ package net.pincette.aar;
 import static java.lang.System.getenv;
 import static java.util.UUID.randomUUID;
 import static net.pincette.aar.AWSAssumeRoleReconciler.LOGGER;
+import static net.pincette.aar.Util.name;
 import static net.pincette.util.Collections.map;
 import static net.pincette.util.Pair.pair;
 import static software.amazon.awssdk.services.sts.StsClient.builder;
 
-import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -29,10 +29,6 @@ public class SecretDependentResource
 
   public SecretDependentResource() {
     super(Secret.class);
-  }
-
-  private static String name(final ObjectMeta metadata) {
-    return "(name: " + metadata.getName() + ", namespace: " + metadata.getNamespace() + ")";
   }
 
   private static String profile(final Credentials credentials) {
