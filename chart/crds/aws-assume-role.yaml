@@ -18,12 +18,15 @@ spec:
               properties:
                 durationSeconds:
                   type: integer
+                ecrRepositoryUrl:
+                  type: string
                 roleName:
                   type: string
                 secretName:
                   type: string
                 secretType:
                   enum:
+                    - EcrDockerConfigJson
                     - File
                     - Map
                   type: string
@@ -48,4 +51,4 @@ spec:
       served: true
       storage: true
       subresources:
-        status: {}
+        status: { }

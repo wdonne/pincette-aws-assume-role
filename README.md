@@ -123,6 +123,108 @@ spec:
         secretName: assume-my-secrets-manager-role
 ```
 
+## Elastic Container Registry
+
+For every ECR repository you want to use you can generate a secret that is constraint to only that repository. The secret type should be `EcrDockerConfigJson`. As the name suggests, the secret will be of the type `kubernetes.io/dockerconfigjson`. You will need to supply the repository URL in the extra field `ecrRepositoryUrl`. The username in the generated secret will be `AWS` and the password will be an authorisation token obtained from the ECR service. This is an example:
+
+```yaml
+apiVersion: pincette.net/v1
+kind: AWSAssumeRole
+metadata:
+  name: assume-my-ecr-role
+  namespace: default
+spec:
+  roleName: my-repo-ecr-role
+  secretName: assume-my-repo-ecr-role
+  secretType: EcrDockerConfigJson
+  ecrRepositoryUrl: https://<account>.dkr.ecr.<region>.amazonaws.com/v2/my-repo
+```
+
+It will generate a secret like this:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: assume-my-repo-ecr-role
+  namespace: default
+data:
+  .dockerconfigjson: >-
+    {
+      "auths":
+        {
+          "https://<account>.dkr.ecr.<region>.amazonaws.com/v2/my-repo":
+            {
+              "username": "AWS",
+              "password":"XXXXXXXXXX"
+            }
+        }
+    }
+type: kubernetes.io/dockerconfigjson
+```
+
+In the values file of the Helm chart of the operator you should add a value like `arn:aws:iam::<account>:role/*-ecr-role`. For each repository you would have a role like this:
+
+```yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Role
+metadata:
+  name: my-repo-ecr-role
+  namespace: default
+spec:
+  name: my-repo-ecr-role
+  description: The role for the my-repo ECR repository
+  policyRefs:
+    - from:
+        name: my-repo-ecr-policy
+  assumeRolePolicyDocument: ""
+```
+
+The corresponding policy looks like this:
+
+```yaml
+apiVersion: iam.services.k8s.aws/v1alpha1
+kind: Policy
+metadata:
+  name: my-repo-ecr-policy
+  namespace: default
+spec:
+  name: my-repo-ecr-policy
+  description: Allow using the my-repo ECR repository
+  policyDocument: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Action": [
+            "ecr:BatchGetImage",
+            "ecr:DescribeRepositories",
+            "ecr:ListTagsForResource",
+            "ecr:PutImage",
+            "ecr:UploadLayerPart",
+            "ecr:CompleteLayerUpload",
+            "ecr:InitiateLayerUpload",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer"
+          ],
+          "Resource": "arn:aws:ecr:<region>:<account>:repository/my-repo"
+        },
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Action": [
+            "ecr:GetAuthorizationToken"
+          ],
+          "Resource": "*"
+        }
+      ]
+    }
+```
+
+## Installation and Configuration
+
 Assuming the presence of the AWS IAM Controller, install the operator as follows:
 
 ```
@@ -182,5 +284,7 @@ spec:
     - $set:
         to.spec.assumeRolePolicyDocument: $from.data.assumeRolePolicyDocument
 ```
+
+Set the `assumeRolePolicyDocument` field in your IAM role to the empty string. The Value Injector will replace it.
 
 The Value Injector can also help with the scenario where you use the EKS cluster as a management cluster and inject the assumed roles into workload clusters that are not EKS clusters.

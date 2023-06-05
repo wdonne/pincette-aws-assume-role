@@ -7,6 +7,9 @@ public class AWSAssumeRoleSpec {
   @JsonProperty("durationSeconds")
   public int durationSeconds = 900;
 
+  @JsonProperty("ecrRepositoryUrl")
+  public String ecrRepositoryUrl;
+
   @JsonProperty("roleName")
   @Required
   public String roleName;

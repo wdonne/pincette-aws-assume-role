@@ -1,11 +1,21 @@
 package net.pincette.aar;
 
 import static java.lang.System.getenv;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.Base64.getDecoder;
+import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
 import static net.pincette.aar.AWSAssumeRoleReconciler.LOGGER;
+import static net.pincette.aar.SecretType.EcrDockerConfigJson;
 import static net.pincette.aar.Util.name;
+import static net.pincette.json.Factory.f;
+import static net.pincette.json.Factory.o;
+import static net.pincette.json.Factory.v;
+import static net.pincette.json.JsonUtil.string;
 import static net.pincette.util.Collections.map;
 import static net.pincette.util.Pair.pair;
+import static net.pincette.util.Util.tryToGetWith;
+import static software.amazon.awssdk.profiles.ProfileFile.Type.CREDENTIALS;
 import static software.amazon.awssdk.services.sts.StsClient.builder;
 
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
@@ -13,7 +23,16 @@ import io.fabric8.kubernetes.api.model.Secret;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
+import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import net.pincette.util.Pair;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.services.ecr.EcrClient;
+import software.amazon.awssdk.services.ecr.model.AuthorizationData;
+import software.amazon.awssdk.services.ecr.model.GetAuthorizationTokenResponse;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 import software.amazon.awssdk.services.sts.model.Credentials;
@@ -31,6 +50,57 @@ public class SecretDependentResource
     super(Secret.class);
   }
 
+  private static AwsCredentialsProvider credentialsProvider(final String profile) {
+    return ProfileCredentialsProvider.builder()
+        .profileFile(
+            builder ->
+                builder
+                    .type(CREDENTIALS)
+                    .content(new ByteArrayInputStream(profile.getBytes(US_ASCII))))
+        .build();
+  }
+
+  private static String decodeToken(final String token) {
+    return new String(getDecoder().decode(token), US_ASCII);
+  }
+
+  private static Optional<String> ecrSecret(final String token, final String repositoryUrl) {
+    return openEcrToken(token)
+        .map(
+            pair ->
+                string(
+                    o(
+                        f(
+                            "auths",
+                            o(
+                                f(
+                                    repositoryUrl,
+                                    o(
+                                        f("username", v(pair.first)),
+                                        f("password", v(pair.second)))))))));
+  }
+
+  private static String ecrToken(final String profile) {
+    return tryToGetWith(() -> getEcrClient(profile), EcrClient::getAuthorizationToken)
+        .map(GetAuthorizationTokenResponse::authorizationData)
+        .filter(list -> list.size() == 1)
+        .map(list -> list.get(0))
+        .map(AuthorizationData::authorizationToken)
+        .orElse(null);
+  }
+
+  @SuppressWarnings({"java:S6241", "java:S6242"}) // Provided by the environment.
+  private static EcrClient getEcrClient(final String profile) {
+    return EcrClient.builder().credentialsProvider(credentialsProvider(profile)).build();
+  }
+
+  private static Optional<Pair<String, String>> openEcrToken(final String token) {
+    return Optional.of(decodeToken(token))
+        .map(t -> t.split(":"))
+        .filter(a -> a.length == 2)
+        .map(a -> pair(a[0], a[1]));
+  }
+
   private static String profile(final Credentials credentials) {
     return "[default]\naws_access_key_id="
         + credentials.accessKeyId()
@@ -45,7 +115,7 @@ public class SecretDependentResource
   }
 
   private Map<String, String> credentials(final AWSAssumeRole primary) {
-    final Credentials credentials =
+    return credentials(
         stsClient
             .assumeRole(
                 AssumeRoleRequest.builder()
@@ -53,14 +123,27 @@ public class SecretDependentResource
                     .durationSeconds(primary.getSpec().durationSeconds)
                     .roleSessionName(randomUUID().toString())
                     .build())
-            .credentials();
+            .credentials(),
+        primary);
+  }
 
-    return primary.getSpec().secretType == SecretType.Map
-        ? map(
+  private Map<String, String> credentials(
+      final Credentials credentials, final AWSAssumeRole primary) {
+    switch (primary.getSpec().secretType) {
+      case EcrDockerConfigJson:
+        return ecrSecret(ecrToken(profile(credentials)), primary.getSpec().ecrRepositoryUrl)
+            .map(secret -> map(pair(".dockerconfigjson", secret)))
+            .orElseGet(Collections::emptyMap);
+      case File:
+        return map(pair("credentials", profile(credentials)));
+      case Map:
+        return map(
             pair("awsAccessKeyId", credentials.accessKeyId()),
             pair("awsSecretAccessKey", credentials.secretAccessKey()),
-            pair("awsSessionToken", credentials.sessionToken()))
-        : map(pair("credentials", profile(credentials)));
+            pair("awsSessionToken", credentials.sessionToken()));
+      default:
+        return emptyMap();
+    }
   }
 
   @Override
@@ -75,6 +158,10 @@ public class SecretDependentResource
             .withNamespace(primary.getMetadata().getNamespace())
             .withLabels(map(pair(SELECTOR, "true")))
             .build());
+
+    if (primary.getSpec().secretType == EcrDockerConfigJson) {
+      secret.setType("kubernetes.io/dockerconfigjson");
+    }
 
     secret.setStringData(credentials(primary));
 
