@@ -5,6 +5,7 @@ import static io.javaoperatorsdk.operator.api.reconciler.UpdateControl.patchStat
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Math.max;
 import static java.lang.Math.round;
+import static java.util.Optional.ofNullable;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Logger.getLogger;
 import static net.pincette.aar.SecretDependentResource.SELECTOR;
@@ -27,6 +28,8 @@ import io.javaoperatorsdk.operator.processing.event.source.timer.TimerEventSourc
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry;
 import java.util.Map;
 import java.util.logging.Logger;
+import net.pincette.operator.util.Status;
+import net.pincette.operator.util.Status.Condition;
 
 @io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration
 @GradualRetry(maxAttempts = MAX_VALUE)
@@ -41,6 +44,10 @@ public class AWSAssumeRoleReconciler
     secretDR.setKubernetesClient(client);
     secretDR.configureWith(
         new KubernetesDependentResourceConfig<Secret>().setLabelSelector(SELECTOR));
+  }
+
+  private static Status status(final AWSAssumeRole resource) {
+    return ofNullable(resource.getStatus()).orElseGet(Status::new);
   }
 
   public Map<String, EventSource> prepareEventSources(
@@ -66,12 +73,12 @@ public class AWSAssumeRoleReconciler
           LOGGER.info(() -> "Reconciling " + name(awsAssumeRole.getMetadata()));
           secretDR.reconcile(awsAssumeRole, context);
           renew(awsAssumeRole);
-          awsAssumeRole.setStatus(new AWSAssumeRoleStatus());
+          awsAssumeRole.setStatus(status(awsAssumeRole).withCondition(new Condition()));
         },
         e -> {
           LOGGER.log(SEVERE, e, e::getMessage);
           timerEventSource.scheduleOnce(awsAssumeRole, 5000);
-          awsAssumeRole.setStatus(new AWSAssumeRoleStatus(e.getMessage()));
+          awsAssumeRole.setStatus(status(awsAssumeRole).withException(e));
         });
 
     return patchStatus(awsAssumeRole);

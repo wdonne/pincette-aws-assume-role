@@ -10,7 +10,17 @@ spec:
     singular: awsassumerole
   scope: Namespaced
   versions:
-    - name: v1
+    - additionalPrinterColumns:
+        - jsonPath: .status.health.status
+          name: Health
+          type: string
+        - jsonPath: .status.phase
+          name: Phase
+          type: string
+        - jsonPath: .status.status
+          name: Health
+          type: string
+      name: v1
       schema:
         openAPIV3Schema:
           properties:
@@ -37,18 +47,31 @@ spec:
               type: object
             status:
               properties:
-                error:
-                  type: string
+                conditions:
+                  items:
+                    properties:
+                      lastTransitionTime:
+                        type: string
+                      message:
+                        type: string
+                      reason:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                    type: object
+                  type: array
+                health:
+                  properties:
+                    status:
+                      type: string
+                  type: object
                 phase:
-                  enum:
-                    - Pending
-                    - Ready
                   type: string
-              required:
-                - phase
               type: object
           type: object
       served: true
       storage: true
       subresources:
-        status: { }
+        status: {}
