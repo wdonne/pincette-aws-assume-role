@@ -16,12 +16,24 @@ spec:
       containers:
         - name: aws-assume-role-controller
           image: "wdonne/pincette-aws-assume-role:{{ .Chart.AppVersion }}"
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           resources:
             {{ toYaml .Values.resources }}
           env:
             - name: AWS_ACCOUNT_ID
               value: {{ .Values.accountId | quote }}
+          {{- if .Values.command }}
+          command:
+            {{ toYaml .Values.command | nindent 12 }}
+          {{- end }}
+          {{- if .Values.args }}
+          args:
+            {{ toYaml .Values.args | nindent 12 }}
+          {{- end }}
+          {{- if .Values.ports }}
+          ports:
+            {{ toYaml .Values.ports | nindent 12 }}
+          {{- end }}
       nodeSelector:
         {{ toYaml .Values.nodeSelector }}
       securityContext:

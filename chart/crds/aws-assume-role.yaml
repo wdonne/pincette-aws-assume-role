@@ -17,9 +17,6 @@ spec:
         - jsonPath: .status.phase
           name: Phase
           type: string
-        - jsonPath: .status.status
-          name: Health
-          type: string
       name: v1
       schema:
         openAPIV3Schema:

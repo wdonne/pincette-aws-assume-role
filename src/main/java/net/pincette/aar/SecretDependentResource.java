@@ -2,7 +2,9 @@ package net.pincette.aar;
 
 import static java.lang.System.getenv;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Base64.getDecoder;
+import static java.util.Base64.getEncoder;
 import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
 import static net.pincette.aar.AWSAssumeRoleReconciler.LOGGER;
@@ -24,6 +26,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import java.io.ByteArrayInputStream;
+import java.util.Base64.Encoder;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -87,6 +90,14 @@ public class SecretDependentResource
         .map(list -> list.get(0))
         .map(AuthorizationData::authorizationToken)
         .orElse(null);
+  }
+
+  private static Map<String, String> encodeMap(final Map<String, String> map) {
+    final Encoder encoder = getEncoder();
+
+    return map(
+        map.entrySet().stream()
+            .map(e -> pair(e.getKey(), encoder.encodeToString(e.getValue().getBytes(UTF_8)))));
   }
 
   @SuppressWarnings({"java:S6241", "java:S6242"}) // Provided by the environment.
@@ -163,7 +174,7 @@ public class SecretDependentResource
       secret.setType("kubernetes.io/dockerconfigjson");
     }
 
-    secret.setStringData(credentials(primary));
+    secret.setData(encodeMap(credentials(primary)));
 
     return secret;
   }

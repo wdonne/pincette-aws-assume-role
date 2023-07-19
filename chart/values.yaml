@@ -1,6 +1,18 @@
 # The AWS account ID.
 accountId: ""
 
+# The command arguments for the controller pod.
+args: []
+
+# The command for the controller pod.
+command: []
+
+# The image pull policy for the controller pod.
+imagePullPolicy: IfNotPresent
+
+# The ports for the controller pod.
+ports: []
+
 # The node selector for the controller pod.
 nodeSelector: {}
 
