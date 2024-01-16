@@ -1,33 +1,27 @@
-# The AWS account ID.
-accountId: ""
-
 # The command arguments for the controller pod.
-args: []
+args: [ ]
 
 # The command for the controller pod.
-command: []
+command: [ ]
 
 # The image pull policy for the controller pod.
 imagePullPolicy: IfNotPresent
 
 # The ports for the controller pod.
-ports: []
+ports: [ ]
 
 # The node selector for the controller pod.
-nodeSelector: {}
-
-# The EKS OIDC provider ID. You can get it with the following command:
-# > aws eks describe-cluster --name my-cluster --query "cluster.identity.oidc.issuer" --output text
-oidcProviderId: ""
-
-# The AWS region.
-region: ""
+nodeSelector: { }
 
 # The resources for the controller pod.
-resources: {}
-
-# The list of IAM roles that the controller is allowed to assume. You can use wildcards.
-rolesToAssume: []
+resources: { }
 
 # The security context for the controller pod.
-securityContext: {}
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+  runAsNonRoot: true

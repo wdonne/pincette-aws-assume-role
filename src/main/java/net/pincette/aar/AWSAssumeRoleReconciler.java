@@ -15,14 +15,13 @@ import static net.pincette.util.Pair.pair;
 import static net.pincette.util.Util.tryToDo;
 
 import io.fabric8.kubernetes.api.model.Secret;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResource;
-import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResourceConfig;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResourceConfigBuilder;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.timer.TimerEventSource;
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry;
@@ -40,10 +39,11 @@ public class AWSAssumeRoleReconciler
       new SecretDependentResource();
   private final TimerEventSource<AWSAssumeRole> timerEventSource = new TimerEventSource<>();
 
-  public AWSAssumeRoleReconciler(final KubernetesClient client) {
-    secretDR.setKubernetesClient(client);
+  public AWSAssumeRoleReconciler() {
     secretDR.configureWith(
-        new KubernetesDependentResourceConfig<Secret>().setLabelSelector(SELECTOR));
+        KubernetesDependentResourceConfigBuilder.<Secret>aKubernetesDependentResourceConfig()
+            .withLabelSelector(SELECTOR)
+            .build());
   }
 
   private static Status status(final AWSAssumeRole resource) {

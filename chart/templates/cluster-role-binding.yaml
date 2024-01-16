@@ -8,7 +8,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: aws-assume-role-controller
-    namespace: aws-assume-role
+    namespace: {{ .Release.Namespace }}
 roleRef:
   name: aws-assume-role-controller
   apiGroup: rbac.authorization.k8s.io

@@ -21,7 +21,7 @@ public class Application {
     final Operator operator = new Operator();
 
     initLogging();
-    operator.register(new AWSAssumeRoleReconciler(operator.getKubernetesClient()));
+    operator.register(new AWSAssumeRoleReconciler());
     operator.start();
   }
 }

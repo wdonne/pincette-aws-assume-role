@@ -1,11 +1,9 @@
 package net.pincette.aar;
 
-import static java.lang.System.getenv;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Base64.getDecoder;
 import static java.util.Base64.getEncoder;
-import static java.util.Collections.emptyMap;
 import static java.util.UUID.randomUUID;
 import static net.pincette.aar.AWSAssumeRoleReconciler.LOGGER;
 import static net.pincette.aar.SecretType.EcrDockerConfigJson;
@@ -43,11 +41,12 @@ import software.amazon.awssdk.services.sts.model.Credentials;
 @KubernetesDependent(labelSelector = SecretDependentResource.SELECTOR)
 public class SecretDependentResource
     extends CRUDKubernetesDependentResource<Secret, AWSAssumeRole> {
-  private static final String ACCOUNT_ID = getenv("AWS_ACCOUNT_ID");
   public static final String SELECTOR = "aws-assume-role";
 
   @SuppressWarnings({"java:S6241", "java:S6242"}) // Provided by the environment.
   private final StsClient stsClient = builder().build();
+
+  private final String accountId = getAccountId(stsClient);
 
   public SecretDependentResource() {
     super(Secret.class);
@@ -100,6 +99,10 @@ public class SecretDependentResource
             .map(e -> pair(e.getKey(), encoder.encodeToString(e.getValue().getBytes(UTF_8)))));
   }
 
+  private static String getAccountId(final StsClient client) {
+    return client.getCallerIdentity().account();
+  }
+
   @SuppressWarnings({"java:S6241", "java:S6242"}) // Provided by the environment.
   private static EcrClient getEcrClient(final String profile) {
     return EcrClient.builder().credentialsProvider(credentialsProvider(profile)).build();
@@ -121,10 +124,6 @@ public class SecretDependentResource
         + credentials.sessionToken();
   }
 
-  private static String roleArn(final String role) {
-    return "arn:aws:iam::" + ACCOUNT_ID + ":role/" + role;
-  }
-
   private Map<String, String> credentials(final AWSAssumeRole primary) {
     return credentials(
         stsClient
@@ -140,21 +139,17 @@ public class SecretDependentResource
 
   private Map<String, String> credentials(
       final Credentials credentials, final AWSAssumeRole primary) {
-    switch (primary.getSpec().secretType) {
-      case EcrDockerConfigJson:
-        return ecrSecret(ecrToken(profile(credentials)), primary.getSpec().ecrRepositoryUrl)
-            .map(secret -> map(pair(".dockerconfigjson", secret)))
-            .orElseGet(Collections::emptyMap);
-      case File:
-        return map(pair("credentials", profile(credentials)));
-      case Map:
-        return map(
-            pair("awsAccessKeyId", credentials.accessKeyId()),
-            pair("awsSecretAccessKey", credentials.secretAccessKey()),
-            pair("awsSessionToken", credentials.sessionToken()));
-      default:
-        return emptyMap();
-    }
+    return switch (primary.getSpec().secretType) {
+      case EcrDockerConfigJson -> ecrSecret(
+              ecrToken(profile(credentials)), primary.getSpec().ecrRepositoryUrl)
+          .map(secret -> map(pair(".dockerconfigjson", secret)))
+          .orElseGet(Collections::emptyMap);
+      case File -> map(pair("credentials", profile(credentials)));
+      case Map -> map(
+          pair("awsAccessKeyId", credentials.accessKeyId()),
+          pair("awsSecretAccessKey", credentials.secretAccessKey()),
+          pair("awsSessionToken", credentials.sessionToken()));
+    };
   }
 
   @Override
@@ -177,5 +172,9 @@ public class SecretDependentResource
     secret.setData(encodeMap(credentials(primary)));
 
     return secret;
+  }
+
+  private String roleArn(final String role) {
+    return "arn:aws:iam::" + accountId + ":role/" + role;
   }
 }

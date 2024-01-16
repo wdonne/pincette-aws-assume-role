@@ -7,7 +7,7 @@
   <groupId>net.pincette</groupId>
   <artifactId>pincette-aws-assume-role</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <name>pincette-aws-assume-role</name>
   <description>A Kubernetes operator that can assume AWS roles
   </description>
@@ -21,7 +21,8 @@
   <scm>
     <url>https://github.com/wdonne/pincette-aws-assume-role</url>
     <connection>scm:git@github.com:wdonne/pincette-aws-assume-role.git</connection>
-    <developerConnection>scm:git@github.com:wdonne/pincette-aws-assume-role.git</developerConnection>
+    <developerConnection>scm:git@github.com:wdonne/pincette-aws-assume-role.git
+    </developerConnection>
   </scm>
 
   <developers>
@@ -44,8 +45,8 @@
   </licenses>
 
   <properties>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -54,7 +55,7 @@
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>bom</artifactId>
-        <version>2.20.103</version>
+        <version>2.22.9</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -65,12 +66,12 @@
     <dependency>
       <groupId>net.pincette</groupId>
       <artifactId>pincette-common</artifactId>
-      <version>2.3.3</version>
+      <version>2.3.5</version>
     </dependency>
     <dependency>
       <groupId>net.pincette</groupId>
       <artifactId>pincette-json</artifactId>
-      <version>2.1</version>
+      <version>2.1.1</version>
     </dependency>
     <dependency>
       <groupId>net.pincette</groupId>
@@ -85,7 +86,7 @@
     <dependency>
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework</artifactId>
-      <version>4.4.0</version>
+      <version>4.6.2</version>
     </dependency>
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
@@ -98,17 +99,17 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <version>2.0.7</version>
+      <version>2.0.10</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>2.0.7</version>
+      <version>2.0.10</version>
     </dependency>
     <dependency>
       <groupId>io.fabric8</groupId>
       <artifactId>crd-generator-apt</artifactId>
-      <version>6.7.2</version>
+      <version>6.9.2</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -118,7 +119,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.12.1</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -146,12 +147,10 @@
       <plugin>
         <groupId>com.google.cloud.tools</groupId>
         <artifactId>jib-maven-plugin</artifactId>
-        <version>3.3.2</version>
+        <version>3.4.0</version>
         <configuration>
           <from>
-            <image>
-              gcr.io/distroless/java11-debian11@sha256:dee9240c64471f1776a6b37f315890aba14ff4bc89ad247eeb34ec79fdeb24f4
-            </image>
+            <image>gcr.io/distroless/java17-debian12</image>
             <platforms>
               <platform>
                 <architecture>amd64</architecture>
@@ -164,7 +163,7 @@
             </platforms>
           </from>
           <to>
-            <image>registry.hub.docker.com/wdonne/${project.name}</image>
+            <image>wdonne/${project.name}</image>
             <tags>
               <tag>${project.version}</tag>
               <tag>latest</tag>
@@ -173,6 +172,7 @@
           <container>
             <mainClass>net.pincette.aar.Application</mainClass>
             <workingDirectory>/</workingDirectory>
+            <user>1000:1000</user>
           </container>
         </configuration>
       </plugin>
@@ -203,7 +203,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.3</version>
         <configuration>
           <forkCount>0</forkCount>
         </configuration>
@@ -211,7 +211,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.1.2</version>
+        <version>3.2.3</version>
       </plugin>
     </plugins>
   </build>

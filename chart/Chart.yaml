@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 1.1.1
+appVersion: 1.1.2
 description: The AWS Assume Role Kubernetes operator
 home: https://github.com/wdonne/pincette-aws-assume-role
 keywords:
@@ -14,4 +14,4 @@ maintainers:
 name: aws-assume-role
 sources:
   - https://github.com/wdonne/pincette-aws-assume-role
-version: 1.1.1
+version: 1.1.2
