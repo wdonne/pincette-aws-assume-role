@@ -5,7 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Base64.getDecoder;
 import static java.util.Base64.getEncoder;
 import static java.util.UUID.randomUUID;
-import static net.pincette.aar.AWSAssumeRoleReconciler.LOGGER;
+import static net.pincette.aar.Application.LOGGER;
 import static net.pincette.aar.SecretType.EcrDockerConfigJson;
 import static net.pincette.aar.Util.name;
 import static net.pincette.json.Factory.f;
@@ -140,15 +140,16 @@ public class SecretDependentResource
   private Map<String, String> credentials(
       final Credentials credentials, final AWSAssumeRole primary) {
     return switch (primary.getSpec().secretType) {
-      case EcrDockerConfigJson -> ecrSecret(
-              ecrToken(profile(credentials)), primary.getSpec().ecrRepositoryUrl)
-          .map(secret -> map(pair(".dockerconfigjson", secret)))
-          .orElseGet(Collections::emptyMap);
+      case EcrDockerConfigJson ->
+          ecrSecret(ecrToken(profile(credentials)), primary.getSpec().ecrRepositoryUrl)
+              .map(secret -> map(pair(".dockerconfigjson", secret)))
+              .orElseGet(Collections::emptyMap);
       case File -> map(pair("credentials", profile(credentials)));
-      case Map -> map(
-          pair("awsAccessKeyId", credentials.accessKeyId()),
-          pair("awsSecretAccessKey", credentials.secretAccessKey()),
-          pair("awsSessionToken", credentials.sessionToken()));
+      case Map ->
+          map(
+              pair("awsAccessKeyId", credentials.accessKeyId()),
+              pair("awsSecretAccessKey", credentials.secretAccessKey()),
+              pair("awsSessionToken", credentials.sessionToken()));
     };
   }
 

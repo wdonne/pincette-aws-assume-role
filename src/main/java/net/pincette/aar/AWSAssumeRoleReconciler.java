@@ -7,7 +7,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.round;
 import static java.util.Optional.ofNullable;
 import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Logger.getLogger;
+import static net.pincette.aar.Application.LOGGER;
 import static net.pincette.aar.SecretDependentResource.SELECTOR;
 import static net.pincette.aar.Util.name;
 import static net.pincette.util.Collections.map;
@@ -26,7 +26,6 @@ import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.timer.TimerEventSource;
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry;
 import java.util.Map;
-import java.util.logging.Logger;
 import net.pincette.operator.util.Status;
 import net.pincette.operator.util.Status.Condition;
 
@@ -34,7 +33,6 @@ import net.pincette.operator.util.Status.Condition;
 @GradualRetry(maxAttempts = MAX_VALUE)
 public class AWSAssumeRoleReconciler
     implements Reconciler<AWSAssumeRole>, EventSourceInitializer<AWSAssumeRole> {
-  static final Logger LOGGER = getLogger("net.pincette.aar");
   private final KubernetesDependentResource<Secret, AWSAssumeRole> secretDR =
       new SecretDependentResource();
   private final TimerEventSource<AWSAssumeRole> timerEventSource = new TimerEventSource<>();
