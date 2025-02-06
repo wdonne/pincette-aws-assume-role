@@ -14,7 +14,13 @@ ports: [ ]
 nodeSelector: { }
 
 # The resources for the controller pod.
-resources: { }
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    cpu: 50m
+    memory: 256Mi
 
 # The security context for the controller pod.
 securityContext:

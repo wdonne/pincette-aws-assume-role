@@ -17,7 +17,7 @@ spec:
         - name: aws-assume-role-controller
           image: "wdonne/pincette-aws-assume-role:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          resources: {{ toYaml .Values.resources }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
           {{- if .Values.command }}
           command: {{ toYaml .Values.command | nindent 12 }}
           {{- end }}
