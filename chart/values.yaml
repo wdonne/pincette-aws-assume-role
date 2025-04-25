@@ -19,7 +19,6 @@ resources:
     cpu: 50m
     memory: 256Mi
   limits:
-    cpu: 50m
     memory: 256Mi
 
 # The security context for the controller pod.
