@@ -1,5 +1,7 @@
 # The AWS Assume Role Operator
 
+**This project has been replaced by https://github.com/wdonne/aws-assume-role.**
+
 On AWS EKS you can let a pod assume an IAM role by associating it with a service account through either [IAM roles](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or [Pod Identities](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html), the latter being the simplest approach. This way you don't have to give such privileges to the worker nodes. Moreover, with [Karpenter](https://karpenter.sh), the creation of nodes is very dynamic. In practice you would have to give all your roles to all of your nodes and hence any pod.
 
 For cases where using the service account is not possible, this operator provides a scenario where you let it assume all the IAM roles you need. For each role it will generate a secret with the access key ID, the secret access key and a session token. The secret is refreshed according to the duration you set, with a small overlap to avoid gaps. The generated secrets can be used by other resources that need access to AWS services.
